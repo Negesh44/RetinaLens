@@ -248,14 +248,35 @@ The app has two parts that are hosted separately:
 | Backend (FastAPI + AI model) | **Render / Railway / Fly.io / Hugging Face Spaces** (Docker) | Needs PyTorch, OpenCV, an 80 MB model, a database and file storage, which Vercel serverless functions cannot hold |
 
 ### Step 1: deploy the backend (Docker)
-1. Create a new **Web Service** from this GitHub repo on Render (or a Docker Space on Hugging Face, or Railway). It uses the `Dockerfile` in the repo root.
-2. Add the environment variable **`GEMINI_API_KEY`** (your Google AI Studio key) in the host's dashboard. Never commit it.
-3. Deploy and copy the public URL, for example `https://retinalens-api.onrender.com`. Check `https://<url>/api/health`.
+The backend needs about **1 GB of RAM**, so 512 MB free tiers (such as Render Free) run out of memory. Two hosts that work:
+
+**Option A: Hugging Face Spaces (free, 16 GB RAM)**
+1. On huggingface.co: **New Space → SDK: Docker → Blank**, name it e.g. `retinalens-api`.
+2. In the Space's **Settings → Variables and secrets**, add the secret **`GEMINI_API_KEY`**.
+3. Push the backend files to the Space (the model is larger than 10 MB, so Git LFS is needed):
+   ```bash
+   git clone https://huggingface.co/spaces/<hf-user>/retinalens-api hf-space
+   cp -r Dockerfile requirements.txt backend ml checkpoints hf-space/
+   cd hf-space
+   printf -- "---
+title: RetinaLens API
+sdk: docker
+app_port: 7860
+---
+" > README.md
+   git lfs install && git lfs track "*.onnx" "*.ttf"
+   git add . && git commit -m "Deploy RetinaLens API" && git push   # password = an HF access token with write access
+   ```
+4. When the build finishes, the URL is `https://<hf-user>-retinalens-api.hf.space`. Check `https://<url>/api/health`.
+
+**Option B: Railway (deploys straight from GitHub)**
+1. **New Project → Deploy from GitHub repo** → pick this repo. Railway detects the `Dockerfile`.
+2. Add the variable **`GEMINI_API_KEY`**, then **Settings → Networking → Generate Domain**.
 
 Notes: free hosts usually have temporary disks, so the screening history and uploaded photos are wiped on restart. Attach a persistent disk mounted at `/app/storage` to keep them. The first start downloads small ImageNet weights, so allow a minute.
 
 ### Step 2: deploy the frontend on Vercel
-1. In `vercel.json`, replace every `YOUR-BACKEND-URL` with the backend's host name only, for example `retinalens-api.onrender.com` (the `https://` is already there). Commit and push.
+1. In `vercel.json`, replace every `YOUR-BACKEND-URL` with the backend's host name only, for example `<hf-user>-retinalens-api.hf.space` (the `https://` is already there). Commit and push.
 2. In Vercel: **Add New Project → Import** this GitHub repo. Keep the root directory as the repo root; the build settings come from `vercel.json`.
 3. Deploy. Vercel serves the site and forwards `/api`, `/uploads` and `/heatmaps` to the backend, so no CORS or code changes are needed.
 

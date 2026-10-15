@@ -5,6 +5,9 @@ import AnalysisLoadingState from './AnalysisLoadingState';
 import { RFMID_SAMPLES, QUALITY_SAMPLES, sampleUrl } from '../lib/samples';
 import { getDiseaseMeta } from '../lib/diseases';
 
+const SERVER_UNREACHABLE =
+  "The screening server is not reachable right now. Please try again in a minute.";
+
 export default function UploadView({ onScreeningComplete }) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -124,7 +127,8 @@ export default function UploadView({ onScreeningComplete }) {
       clearTimeout(timer4);
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ detail: "Screening request failed." }));
+        const errorData = await res.json().catch(() => null);
+        if (!errorData) throw new Error(SERVER_UNREACHABLE);
         throw new Error(errorData.detail || `Server error (${res.status})`);
       }
 
@@ -137,7 +141,8 @@ export default function UploadView({ onScreeningComplete }) {
       clearTimeout(timer3);
       clearTimeout(timer4);
       setIsLoading(false);
-      setErrorMessage(err.message || "Failed to process retinal scan.");
+      // fetch() rejects with a TypeError when the server cannot be reached at all.
+      setErrorMessage(err instanceof TypeError ? SERVER_UNREACHABLE : err.message || "Failed to process retinal scan.");
     }
   };
 
