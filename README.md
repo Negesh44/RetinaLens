@@ -7,10 +7,8 @@
 [![Tests](https://img.shields.io/badge/Tests-18%2F18%20Passing-brightgreen.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> ### ⚠️ Mandatory Clinical Regulatory Disclaimer
-> **RetinaLens is an investigational screening aid intended solely to assist clinical review by qualified healthcare professionals. It is NOT a medical device, does NOT provide an automated diagnosis, and does not replace comprehensive ophthalmic examination.** This notice is permanently embedded across all software views, API payloads, and generated PDF reports.
 
----
+
 
 ## 1. Problem Definition & Clinical Goal
 
