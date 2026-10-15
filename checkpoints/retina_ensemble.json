@@ -1,0 +1,602 @@
+{
+  "type": "ensemble",
+  "members": [
+    {
+      "name": "retina_md_v2s_ema",
+      "onnx": "retina_md_v2s_ema.onnx",
+      "backbone": "tf_efficientnetv2_s.in21k_ft_in1k",
+      "image_size": 384,
+      "best_epoch": 7
+    }
+  ],
+  "classes": [
+    "abnormal",
+    "diabetic_retinopathy",
+    "amd",
+    "glaucoma",
+    "pathologic_myopia",
+    "hypertensive_retinopathy",
+    "vascular_occlusion",
+    "csc",
+    "papilledema",
+    "chorioretinitis",
+    "macular_hole_pucker"
+  ],
+  "class_names": {
+    "abnormal": "Any retinal abnormality",
+    "diabetic_retinopathy": "Diabetic Retinopathy",
+    "amd": "Age-Related Macular Degeneration",
+    "glaucoma": "Glaucoma (optic disc cupping)",
+    "pathologic_myopia": "Pathologic Myopia",
+    "hypertensive_retinopathy": "Hypertensive Retinopathy",
+    "vascular_occlusion": "Retinal Vascular Occlusion",
+    "csc": "Central Serous Chorioretinopathy",
+    "papilledema": "Optic Disc Edema",
+    "chorioretinitis": "Chorioretinitis / Retinitis",
+    "macular_hole_pucker": "Macular Hole / Epiretinal Membrane",
+    "inherited_dystrophy": "Retinitis Pigmentosa"
+  },
+  "excluded_classes": [
+    "inherited_dystrophy"
+  ],
+  "calibration": {
+    "abnormal": [
+      0.8768462538719177,
+      0.4325786530971527
+    ],
+    "diabetic_retinopathy": [
+      0.7820517420768738,
+      -1.3256568908691406
+    ],
+    "amd": [
+      0.5202013254165649,
+      -2.684067964553833
+    ],
+    "glaucoma": [
+      0.648112416267395,
+      -2.108191967010498
+    ],
+    "pathologic_myopia": [
+      0.7652252316474915,
+      -2.176448345184326
+    ],
+    "hypertensive_retinopathy": [
+      0.5566977262496948,
+      -1.8789558410644531
+    ],
+    "vascular_occlusion": [
+      0.5552524924278259,
+      -1.824363350868225
+    ],
+    "csc": [
+      0.6446517705917358,
+      -2.7954909801483154
+    ],
+    "papilledema": [
+      0.5086979866027832,
+      -2.6363258361816406
+    ],
+    "chorioretinitis": [
+      0.4840414524078369,
+      -2.5865225791931152
+    ],
+    "macular_hole_pucker": [
+      0.8833834528923035,
+      -0.9630986452102661
+    ]
+  },
+  "thresholds": {
+    "abnormal": 0.6727798507888548,
+    "diabetic_retinopathy": 0.26712896335735276,
+    "amd": 0.2,
+    "glaucoma": 0.2,
+    "pathologic_myopia": 0.2,
+    "hypertensive_retinopathy": 0.2,
+    "vascular_occlusion": 0.2,
+    "csc": 0.2,
+    "papilledema": 0.2,
+    "chorioretinitis": 0.2,
+    "macular_hole_pucker": 0.2
+  },
+  "consistency_rule": {
+    "gate": 0.7,
+    "override": 0.6,
+    "description": "a condition is reported only if p(any abnormality) >= gate, unless its own probability >= override"
+  },
+  "threshold_rule": "validation specificity >= 0.90, probability floor 0.20",
+  "mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "val_mean_auc_per_model": {
+    "retina_multidisease": 0.9343446642079882,
+    "retina_md_b3_ema": 0.9323655903533385,
+    "retina_md_v2s_ema": 0.957168593578393
+  },
+  "val_mean_auc": 0.957168593578393,
+  "val": {
+    "per_class": {
+      "abnormal": {
+        "n": 1594,
+        "n_pos": 1040,
+        "tp": 800,
+        "fn": 240,
+        "tn": 498,
+        "fp": 56,
+        "sensitivity": 0.7692307692307693,
+        "specificity": 0.8989169675090253,
+        "accuracy": 0.8143036386449184,
+        "auc": 0.9036578381005276
+      },
+      "diabetic_retinopathy": {
+        "n": 1594,
+        "n_pos": 376,
+        "tp": 266,
+        "fn": 110,
+        "tn": 1151,
+        "fp": 67,
+        "sensitivity": 0.7074468085106383,
+        "specificity": 0.944991789819376,
+        "accuracy": 0.8889585947302384,
+        "auc": 0.9305006026621947
+      },
+      "amd": {
+        "n": 1594,
+        "n_pos": 73,
+        "tp": 55,
+        "fn": 18,
+        "tn": 1492,
+        "fp": 29,
+        "sensitivity": 0.7534246575342466,
+        "specificity": 0.9809335963182118,
+        "accuracy": 0.9705144291091593,
+        "auc": 0.9595705781164159
+      },
+      "glaucoma": {
+        "n": 1594,
+        "n_pos": 107,
+        "tp": 71,
+        "fn": 36,
+        "tn": 1437,
+        "fp": 50,
+        "sensitivity": 0.6635514018691588,
+        "specificity": 0.9663752521856086,
+        "accuracy": 0.946047678795483,
+        "auc": 0.9479727733817698
+      },
+      "pathologic_myopia": {
+        "n": 1594,
+        "n_pos": 64,
+        "tp": 57,
+        "fn": 7,
+        "tn": 1515,
+        "fp": 15,
+        "sensitivity": 0.890625,
+        "specificity": 0.9901960784313726,
+        "accuracy": 0.986198243412798,
+        "auc": 0.9964154411764706
+      },
+      "hypertensive_retinopathy": {
+        "n": 1088,
+        "n_pos": 30,
+        "tp": 7,
+        "fn": 23,
+        "tn": 1050,
+        "fp": 8,
+        "sensitivity": 0.23333333333333334,
+        "specificity": 0.9924385633270322,
+        "accuracy": 0.9715073529411765,
+        "auc": 0.8843730308758664
+      },
+      "vascular_occlusion": {
+        "n": 1060,
+        "n_pos": 35,
+        "tp": 25,
+        "fn": 10,
+        "tn": 1015,
+        "fp": 10,
+        "sensitivity": 0.7142857142857143,
+        "specificity": 0.9902439024390244,
+        "accuracy": 0.9811320754716981,
+        "auc": 0.9667735191637631
+      },
+      "csc": {
+        "n": 1060,
+        "n_pos": 11,
+        "tp": 7,
+        "fn": 4,
+        "tn": 1044,
+        "fp": 5,
+        "sensitivity": 0.6363636363636364,
+        "specificity": 0.9952335557673975,
+        "accuracy": 0.9915094339622641,
+        "auc": 0.9901204610451512
+      },
+      "papilledema": {
+        "n": 1060,
+        "n_pos": 21,
+        "tp": 13,
+        "fn": 8,
+        "tn": 1029,
+        "fp": 10,
+        "sensitivity": 0.6190476190476191,
+        "specificity": 0.9903753609239654,
+        "accuracy": 0.9830188679245283,
+        "auc": 0.9892066547504469
+      },
+      "chorioretinitis": {
+        "n": 1060,
+        "n_pos": 25,
+        "tp": 19,
+        "fn": 6,
+        "tn": 1028,
+        "fp": 7,
+        "sensitivity": 0.76,
+        "specificity": 0.9932367149758454,
+        "accuracy": 0.9877358490566037,
+        "auc": 0.9811207729468598
+      },
+      "macular_hole_pucker": {
+        "n": 1060,
+        "n_pos": 10,
+        "tp": 4,
+        "fn": 6,
+        "tn": 1044,
+        "fp": 6,
+        "sensitivity": 0.4,
+        "specificity": 0.9942857142857143,
+        "accuracy": 0.9886792452830189,
+        "auc": 0.9791428571428571
+      }
+    },
+    "macro_balanced_accuracy": 0.8108194349708947,
+    "verdict": {
+      "sensitivity": 0.7740384615384616,
+      "specificity": 0.8971119133574007,
+      "balanced_accuracy": 0.8355751874479311,
+      "healthy_eyes": 554,
+      "healthy_with_no_condition_reported": 0.9386281588447654
+    }
+  },
+  "test": {
+    "abnormal": {
+      "n": 1603,
+      "n_pos": 1042,
+      "tp": 810,
+      "fn": 232,
+      "tn": 516,
+      "fp": 45,
+      "sensitivity": 0.7773512476007678,
+      "specificity": 0.9197860962566845,
+      "accuracy": 0.827199001871491,
+      "auc": 0.9185843417806838
+    },
+    "diabetic_retinopathy": {
+      "n": 1603,
+      "n_pos": 372,
+      "tp": 266,
+      "fn": 106,
+      "tn": 1177,
+      "fp": 54,
+      "sensitivity": 0.7150537634408602,
+      "specificity": 0.9561332250203087,
+      "accuracy": 0.9001871490954461,
+      "auc": 0.9319178393298568
+    },
+    "amd": {
+      "n": 1603,
+      "n_pos": 67,
+      "tp": 44,
+      "fn": 23,
+      "tn": 1510,
+      "fp": 26,
+      "sensitivity": 0.6567164179104478,
+      "specificity": 0.9830729166666666,
+      "accuracy": 0.9694323144104804,
+      "auc": 0.9222539645522388
+    },
+    "glaucoma": {
+      "n": 1603,
+      "n_pos": 128,
+      "tp": 73,
+      "fn": 55,
+      "tn": 1419,
+      "fp": 56,
+      "sensitivity": 0.5703125,
+      "specificity": 0.9620338983050848,
+      "accuracy": 0.9307548346849657,
+      "auc": 0.9266393008474576
+    },
+    "pathologic_myopia": {
+      "n": 1603,
+      "n_pos": 75,
+      "tp": 68,
+      "fn": 7,
+      "tn": 1514,
+      "fp": 14,
+      "sensitivity": 0.9066666666666666,
+      "specificity": 0.9908376963350786,
+      "accuracy": 0.9868995633187773,
+      "auc": 0.9948385689354275
+    },
+    "hypertensive_retinopathy": {
+      "n": 1097,
+      "n_pos": 13,
+      "tp": 1,
+      "fn": 12,
+      "tn": 1076,
+      "fp": 8,
+      "sensitivity": 0.07692307692307693,
+      "specificity": 0.992619926199262,
+      "accuracy": 0.9817684594348223,
+      "auc": 0.8576852114674993
+    },
+    "vascular_occlusion": {
+      "n": 1067,
+      "n_pos": 32,
+      "tp": 28,
+      "fn": 4,
+      "tn": 1016,
+      "fp": 19,
+      "sensitivity": 0.875,
+      "specificity": 0.9816425120772947,
+      "accuracy": 0.9784442361761949,
+      "auc": 0.9697765700483092
+    },
+    "csc": {
+      "n": 1067,
+      "n_pos": 13,
+      "tp": 8,
+      "fn": 5,
+      "tn": 1049,
+      "fp": 5,
+      "sensitivity": 0.6153846153846154,
+      "specificity": 0.9952561669829222,
+      "accuracy": 0.9906279287722587,
+      "auc": 0.9887607648518464
+    },
+    "papilledema": {
+      "n": 1067,
+      "n_pos": 17,
+      "tp": 13,
+      "fn": 4,
+      "tn": 1049,
+      "fp": 1,
+      "sensitivity": 0.7647058823529411,
+      "specificity": 0.9990476190476191,
+      "accuracy": 0.9953139643861293,
+      "auc": 0.96593837535014
+    },
+    "chorioretinitis": {
+      "n": 1067,
+      "n_pos": 25,
+      "tp": 17,
+      "fn": 8,
+      "tn": 1036,
+      "fp": 6,
+      "sensitivity": 0.68,
+      "specificity": 0.9942418426103646,
+      "accuracy": 0.9868791002811621,
+      "auc": 0.99
+    },
+    "macular_hole_pucker": {
+      "n": 1067,
+      "n_pos": 7,
+      "tp": 4,
+      "fn": 3,
+      "tn": 1053,
+      "fp": 7,
+      "sensitivity": 0.5714285714285714,
+      "specificity": 0.9933962264150943,
+      "accuracy": 0.9906279287722587,
+      "auc": 0.9785040431266847
+    }
+  },
+  "test_summary": {
+    "macro_balanced_accuracy": 0.8140236761883438,
+    "verdict": {
+      "sensitivity": 0.7859884836852208,
+      "specificity": 0.9126559714795008,
+      "balanced_accuracy": 0.8493222275823609,
+      "healthy_eyes": 561,
+      "healthy_with_no_condition_reported": 0.9411764705882353
+    }
+  },
+  "baseline_single_model_test": {
+    "per_class": {
+      "abnormal": {
+        "n": 1603,
+        "n_pos": 1042,
+        "tp": 740,
+        "fn": 302,
+        "tn": 516,
+        "fp": 45,
+        "sensitivity": 0.710172744721689,
+        "specificity": 0.9197860962566845,
+        "accuracy": 0.7835308796007486,
+        "auc": 0.8984290802344319
+      },
+      "diabetic_retinopathy": {
+        "n": 1603,
+        "n_pos": 372,
+        "tp": 270,
+        "fn": 102,
+        "tn": 1148,
+        "fp": 83,
+        "sensitivity": 0.7258064516129032,
+        "specificity": 0.9325751421608448,
+        "accuracy": 0.8845913911416095,
+        "auc": 0.91204152581606
+      },
+      "amd": {
+        "n": 1603,
+        "n_pos": 67,
+        "tp": 55,
+        "fn": 12,
+        "tn": 1413,
+        "fp": 123,
+        "sensitivity": 0.8208955223880597,
+        "specificity": 0.919921875,
+        "accuracy": 0.9157829070492826,
+        "auc": 0.9534893889925372
+      },
+      "glaucoma": {
+        "n": 1603,
+        "n_pos": 128,
+        "tp": 102,
+        "fn": 26,
+        "tn": 1311,
+        "fp": 164,
+        "sensitivity": 0.796875,
+        "specificity": 0.8888135593220339,
+        "accuracy": 0.8814722395508422,
+        "auc": 0.9236652542372882
+      },
+      "pathologic_myopia": {
+        "n": 1603,
+        "n_pos": 75,
+        "tp": 67,
+        "fn": 8,
+        "tn": 1509,
+        "fp": 19,
+        "sensitivity": 0.8933333333333333,
+        "specificity": 0.987565445026178,
+        "accuracy": 0.9831565814098565,
+        "auc": 0.9949694589877836
+      },
+      "hypertensive_retinopathy": {
+        "n": 1097,
+        "n_pos": 13,
+        "tp": 4,
+        "fn": 9,
+        "tn": 1047,
+        "fp": 37,
+        "sensitivity": 0.3076923076923077,
+        "specificity": 0.9658671586715867,
+        "accuracy": 0.9580674567000912,
+        "auc": 0.8800738007380073
+      },
+      "vascular_occlusion": {
+        "n": 1067,
+        "n_pos": 32,
+        "tp": 29,
+        "fn": 3,
+        "tn": 1008,
+        "fp": 27,
+        "sensitivity": 0.90625,
+        "specificity": 0.9739130434782609,
+        "accuracy": 0.971883786316776,
+        "auc": 0.9743659420289855
+      },
+      "csc": {
+        "n": 1067,
+        "n_pos": 13,
+        "tp": 9,
+        "fn": 4,
+        "tn": 1041,
+        "fp": 13,
+        "sensitivity": 0.6923076923076923,
+        "specificity": 0.9876660341555977,
+        "accuracy": 0.9840674789128397,
+        "auc": 0.9909502262443439
+      },
+      "papilledema": {
+        "n": 1067,
+        "n_pos": 17,
+        "tp": 15,
+        "fn": 2,
+        "tn": 1033,
+        "fp": 17,
+        "sensitivity": 0.8823529411764706,
+        "specificity": 0.9838095238095238,
+        "accuracy": 0.9821930646672915,
+        "auc": 0.9846778711484594
+      },
+      "chorioretinitis": {
+        "n": 1067,
+        "n_pos": 25,
+        "tp": 19,
+        "fn": 6,
+        "tn": 1026,
+        "fp": 16,
+        "sensitivity": 0.76,
+        "specificity": 0.9846449136276392,
+        "accuracy": 0.979381443298969,
+        "auc": 0.9726103646833013
+      },
+      "macular_hole_pucker": {
+        "n": 1067,
+        "n_pos": 7,
+        "tp": 3,
+        "fn": 4,
+        "tn": 1029,
+        "fp": 31,
+        "sensitivity": 0.42857142857142855,
+        "specificity": 0.970754716981132,
+        "accuracy": 0.9671977507029054,
+        "auc": 0.9272237196765498
+      }
+    },
+    "macro_balanced_accuracy": 0.8404808044657497,
+    "verdict": {
+      "sensitivity": 0.8416506717850288,
+      "specificity": 0.6559714795008913,
+      "balanced_accuracy": 0.74881107564296,
+      "healthy_eyes": 561,
+      "healthy_with_no_condition_reported": 0.6595365418894831
+    }
+  },
+  "data": {
+    "train": {
+      "images": 6395,
+      "abnormal": 3968,
+      "diabetic_retinopathy": 1492,
+      "amd": 295,
+      "glaucoma": 494,
+      "pathologic_myopia": 260,
+      "hypertensive_retinopathy": 85,
+      "vascular_occlusion": 105,
+      "csc": 37,
+      "papilledema": 58,
+      "chorioretinitis": 75,
+      "macular_hole_pucker": 25,
+      "inherited_dystrophy": 6
+    },
+    "val": {
+      "images": 1594,
+      "abnormal": 1040,
+      "diabetic_retinopathy": 376,
+      "amd": 73,
+      "glaucoma": 107,
+      "pathologic_myopia": 64,
+      "hypertensive_retinopathy": 30,
+      "vascular_occlusion": 35,
+      "csc": 11,
+      "papilledema": 21,
+      "chorioretinitis": 25,
+      "macular_hole_pucker": 10,
+      "inherited_dystrophy": 2
+    },
+    "test": {
+      "images": 1603,
+      "abnormal": 1042,
+      "diabetic_retinopathy": 372,
+      "amd": 67,
+      "glaucoma": 128,
+      "pathologic_myopia": 75,
+      "hypertensive_retinopathy": 13,
+      "vascular_occlusion": 32,
+      "csc": 13,
+      "papilledema": 17,
+      "chorioretinitis": 25,
+      "macular_hole_pucker": 7,
+      "inherited_dystrophy": 2
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm install --prefix frontend",
+  "buildCommand": "npm run build --prefix frontend",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://YOUR-BACKEND-URL/api/:path*" },
+    { "source": "/uploads/:path*", "destination": "https://YOUR-BACKEND-URL/uploads/:path*" },
+    { "source": "/heatmaps/:path*", "destination": "https://YOUR-BACKEND-URL/heatmaps/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-primary: #0284c7;
+    --brand-dark: #0f172a;
+    --bg-surface: #070c18;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-sky-500 selection:text-white;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, .font-heading {
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+    letter-spacing: -0.025em;
+  }
+
+  .font-mono, code, kbd, samp {
+    font-family: 'JetBrains Mono', monospace;
+    font-feature-settings: "zero", "calt";
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom Sleek Dark Scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--c-slate-950));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--c-slate-700));
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--c-slate-600));
+}
+
+/* Glassmorphism utility classes */
+.glass-panel {
+  background: rgb(var(--c-slate-900) / 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.glass-panel-elevated {
+  background: rgb(var(--c-slate-900) / 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), 0 0 25px -5px rgba(2, 132, 199, 0.2);
+}
+
+/* Micro-animations */
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+.animate-pulse-subtle {
+  animation: pulseSubtle 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.35); }
+  50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.65); }
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 2.5s ease-in-out infinite;
+}
+

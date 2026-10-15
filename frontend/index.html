@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Apply the saved theme before first paint (light is the default). -->
+    <script>
+      try { if (localStorage.getItem('retinalens-theme') === 'dark') document.documentElement.classList.add('dark'); } catch (e) {}
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0284c7" />
+    <meta name="description" content="RetinaLens: AI screening of retina photos for 10 common eye diseases, with a photo quality check and a downloadable report." />
+    <title>RetinaLens · Retinal Disease Screening</title>
+
+    <!-- Google Fonts Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Plus Jakarta Sans (Headings), Inter (UI Body), JetBrains Mono (Coordinates & Quantitative Metrics) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-slate-950 text-slate-100 antialiased selection:bg-sky-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+

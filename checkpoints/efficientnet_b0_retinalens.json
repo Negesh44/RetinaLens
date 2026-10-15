@@ -1,0 +1,18 @@
+{
+  "backbone_name": "efficientnet_b0",
+  "head_type": "regression",
+  "image_size": 224,
+  "thresholds": [
+    -1.0994,
+    -0.0994,
+    0.9006,
+    3.5
+  ],
+  "temperature": 1.5921404361724854,
+  "input_names": [
+    "input_fundus"
+  ],
+  "output_names": [
+    "prediction"
+  ]
+}

@@ -1,0 +1,12 @@
+# RetinaLens Experiment Configuration: EfficientNet-B3 (High Resolution)
+experiment_name: "retinalens_b3_highres"
+backbone: "efficientnet_b3"
+head_type: "regression"
+image_size: 380
+batch_size: 8
+epochs: 20
+lr: 0.0002
+use_ben_graham: true
+dataset: "aptos"
+quality_threshold: 0.50
+uncertainty_threshold: 0.60

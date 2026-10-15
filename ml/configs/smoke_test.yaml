@@ -1,0 +1,12 @@
+# RetinaLens Fast CPU Smoke Test Configuration
+experiment_name: "retinalens_cpu_smoke_test"
+backbone: "efficientnet_b0"
+head_type: "regression"
+image_size: 224
+batch_size: 4
+epochs: 1
+lr: 0.001
+use_ben_graham: true
+dataset: "synthetic"
+quality_threshold: 0.50
+uncertainty_threshold: 0.60

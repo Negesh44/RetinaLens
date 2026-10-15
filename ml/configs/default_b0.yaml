@@ -1,0 +1,12 @@
+# RetinaLens Experiment Configuration: EfficientNet-B0 (Default)
+experiment_name: "retinalens_b0_baseline"
+backbone: "efficientnet_b0"
+head_type: "regression"
+image_size: 224
+batch_size: 16
+epochs: 15
+lr: 0.0003
+use_ben_graham: true
+dataset: "aptos"
+quality_threshold: 0.50
+uncertainty_threshold: 0.60

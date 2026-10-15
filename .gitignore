@@ -1,0 +1,75 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments and secrets (keep .env.example, which holds variable names only)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.venv
+.venv-*/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Datasets and Patient Data (NEVER commit datasets or patient scans)
+data/
+datasets/
+uploads/
+*.csv.gz
+*.tar.gz
+*.zip
+aptos2019/
+eyepacs/
+idrid/
+messidor2/
+synthetic_data/
+
+# Runtime data: patient database, uploaded photos, AI heatmaps and reports (never commit)
+storage/
+*.db
+*.sqlite
+*.sqlite3
+
+# Model checkpoints and weights: only the files the deployed backend needs are committed
+checkpoints/*
+*.pth
+*.pt
+*.onnx
+*.safetensors
+!checkpoints/.gitkeep
+!models/.gitkeep
+!checkpoints/retina_md_v2s_ema.onnx
+!checkpoints/retina_ensemble.json
+!checkpoints/efficientnet_b0_retinalens.onnx
+!checkpoints/efficientnet_b0_retinalens.json
+
+# Artifacts and logs
+runs/
+logs/
+reports/
+generated_charts/
+results/
+*.pdf
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+.npm/
+
+# Test and tool caches
+.pytest_cache/
+.vercel/
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,39 @@
+# RetinaLens Clinical Deep Learning Experiment: ResNet-50 Baseline & Multi-Disease Adaptation
+experiment_name: "retinalens_resnet50_multidisease"
+backbone: "resnet50"
+head_type: "multitask" # Supports "regression", "classification", "multilabel", "multitask"
+image_size: 224
+batch_size: 16
+epochs: 25
+lr: 0.0001
+min_lr: 0.000001
+weight_decay: 0.0001
+lr_scheduler: "cosine"
+optimizer: "adamw"
+grad_clip_norm: 1.0
+use_ben_graham: true
+dataset: "aptos_mured_composite"
+quality_threshold: 0.50
+uncertainty_threshold: 0.60
+
+# Multi-Disease Architecture Adaptation
+multi_disease:
+  enabled: true
+  num_diseases: 14
+  dr_loss_weight: 1.0
+  disease_loss_weight: 1.5
+  diseases:
+    - "diabetic_retinopathy"
+    - "amd"
+    - "glaucoma"
+    - "retinal_detachment"
+    - "macular_hole_pucker"
+    - "vascular_occlusion"
+    - "csc"
+    - "inherited_dystrophy"
+    - "ocular_cancer"
+    - "hypertensive_retinopathy"
+    - "pathologic_myopia"
+    - "diabetic_macular_edema"
+    - "papilledema"
+    - "chorioretinitis"
