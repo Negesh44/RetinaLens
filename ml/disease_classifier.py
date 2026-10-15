@@ -168,21 +168,30 @@ def _region_location(cx: float, cy: float, w: int, h: int) -> str:
     return f"{'Upper' if dy < 0 else 'Lower'}-{'left' if dx < 0 else 'right'} region"
 
 
-def attention_regions(result: ClassifierResult, condition_id: str, name: str, image_shape, valid_pixels: int,
-                      advice: str, max_regions: int = 3, level: float = 0.6) -> List[dict]:
-    """Hot spots of one condition's activation map, as lesion-shaped dicts in original image coordinates."""
+def cam_full_frame(result: ClassifierResult, condition_id: str, image_shape) -> Optional[np.ndarray]:
+    """One condition's activation map resized onto the original image, in [0, 1] (None if it cannot be placed)."""
     h, w = image_shape[:2]
     x0, y0, side = result.crop_box
-    if side <= 0:
-        return []
+    if side <= 0 or condition_id not in result.cams:
+        return None
     cam_sq = cv2.resize(result.cams[condition_id], (side, side), interpolation=cv2.INTER_CUBIC)
     full = np.zeros((h, w), np.float32)
     sx0, sy0 = max(0, -x0), max(0, -y0)
     dx0, dy0 = max(0, x0), max(0, y0)
     cw, ch = min(side - sx0, w - dx0), min(side - sy0, h - dy0)
     if cw <= 0 or ch <= 0:
-        return []
+        return None
     full[dy0:dy0 + ch, dx0:dx0 + cw] = cam_sq[sy0:sy0 + ch, sx0:sx0 + cw]
+    return np.clip(full, 0.0, 1.0)
+
+
+def attention_regions(result: ClassifierResult, condition_id: str, name: str, image_shape, valid_pixels: int,
+                      advice: str, max_regions: int = 3, level: float = 0.6) -> List[dict]:
+    """Hot spots of one condition's activation map, as lesion-shaped dicts in original image coordinates."""
+    h, w = image_shape[:2]
+    full = cam_full_frame(result, condition_id, image_shape)
+    if full is None:
+        return []
 
     mask = (full >= level).astype(np.uint8)
     n, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)

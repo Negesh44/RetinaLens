@@ -10,7 +10,6 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
-import torch
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -25,14 +24,12 @@ from ml.config import (
     DEFAULT_QUALITY_THRESHOLD,
     DEFAULT_UNCERTAINTY_THRESHOLD,
 )
-from ml.preprocessing import preprocess_fundus_image, get_val_transforms
+from ml.preprocessing import preprocess_fundus_image, to_model_input
 from ml.quality import ImageQualityAssessor
-from ml.models import RetinaModel, create_retina_model
-from ml.loss import continuous_to_probabilities
-from ml.gradcam import FundusExplainer
-from ml.export import ONNXRetinaEngine, export_retina_model_to_onnx
+from ml.grading import continuous_to_probabilities
+from ml.onnx_engine import ONNXRetinaEngine
 from ml.lesion_detector import RetinaLesionDetector
-from ml.disease_classifier import RetinaDiseaseClassifier, apply_to_analysis
+from ml.disease_classifier import ClassifierResult, RetinaDiseaseClassifier, apply_to_analysis, cam_full_frame
 
 from backend.config import (
     UPLOADS_DIR,
@@ -69,14 +66,37 @@ class ScreeningService:
         self.temperature = 1.0
 
         self.onnx_engine: Optional[ONNXRetinaEngine] = None
-        self.pytorch_model: Optional[RetinaModel] = None
-        self.explainer: Optional[FundusExplainer] = None
-        self.device = torch.device("cpu")  # CPU-optimized for portable laptop deployments
+        # PyTorch is only loaded when the exported ONNX model is missing (it needs ~1.5 GB more RAM).
+        self.pytorch_model = None
+        self.explainer = None
 
         self._initialize_models()
 
     def _initialize_models(self):
-        """Initializes ONNX runtime engine and PyTorch Grad-CAM explainability module."""
+        """Uses the exported ONNX model when present; otherwise builds it with PyTorch."""
+        if DEFAULT_ONNX_PATH.exists():
+            try:
+                self._load_onnx_engine()
+                return
+            except Exception as e:
+                logger.warning("Could not initialize ONNX engine (%s), using PyTorch engine.", e)
+        self._initialize_pytorch()
+
+    def _load_onnx_engine(self):
+        self.onnx_engine = ONNXRetinaEngine(DEFAULT_ONNX_PATH)
+        self.thresholds = self.onnx_engine.metadata.get("thresholds", self.thresholds)
+        self.image_size = self.onnx_engine.metadata.get("image_size", self.image_size)
+        self.temperature = self.onnx_engine.metadata.get("temperature", 1.0)
+        logger.info("ONNX runtime inference engine ready.")
+
+    def _initialize_pytorch(self):
+        """PyTorch fallback: the DR model, a one-off ONNX export and the Grad-CAM explainer."""
+        import torch
+        from ml.export import export_retina_model_to_onnx
+        from ml.gradcam import FundusExplainer
+        from ml.models import create_retina_model
+
+        self.device = torch.device("cpu")
         # 1. Initialize PyTorch model (used for Grad-CAM and fallback)
         self.pytorch_model = create_retina_model(
             backbone_name="efficientnet_b0",
@@ -113,11 +133,7 @@ class ScreeningService:
         # 3. Instantiate ONNX inference engine
         if DEFAULT_ONNX_PATH.exists():
             try:
-                self.onnx_engine = ONNXRetinaEngine(DEFAULT_ONNX_PATH)
-                self.thresholds = self.onnx_engine.metadata.get("thresholds", self.thresholds)
-                self.image_size = self.onnx_engine.metadata.get("image_size", self.image_size)
-                self.temperature = self.onnx_engine.metadata.get("temperature", 1.0)
-                logger.info("ONNX runtime inference engine ready.")
+                self._load_onnx_engine()
             except Exception as e:
                 logger.warning("Could not initialize ONNX engine (%s), using PyTorch engine.", e)
 
@@ -221,23 +237,13 @@ class ScreeningService:
             crop_border=True,
         )
 
-        val_transforms = get_val_transforms(self.image_size)
-        tensor_img = val_transforms(image=preprocessed_rgb)["image"].unsqueeze(0)
+        model_input = to_model_input(preprocessed_rgb)
 
-        # 3. Fast ONNX Inference (with PyTorch fallback)
-        continuous_pred = 0.0
+        # 3. Fast ONNX Inference (PyTorch only when the ONNX model is missing)
         if self.onnx_engine is not None:
-            try:
-                onnx_input = tensor_img.numpy()
-                raw_out = self.onnx_engine.predict(onnx_input)
-                continuous_pred = float(np.squeeze(raw_out))
-            except Exception as e:
-                logger.warning("ONNX inference failed (%s); falling back to PyTorch", e)
-                with torch.no_grad():
-                    continuous_pred = float(self.pytorch_model(tensor_img).squeeze().item())
+            continuous_pred = float(np.squeeze(self.onnx_engine.predict(model_input)))
         else:
-            with torch.no_grad():
-                continuous_pred = float(self.pytorch_model(tensor_img).squeeze().item())
+            continuous_pred = self._pytorch_predict(model_input)
 
         # 4. Discretization using optimized thresholds
         th = self.thresholds
@@ -268,20 +274,34 @@ class ScreeningService:
         grade_desc = ICDR_DESCRIPTIONS.get(grade, ICDR_DESCRIPTIONS[0])
         referral_rec = grade_desc["action"]
 
-        # 6. Grad-CAM Explainability Visualization
+        # 6. Trained multi-disease classifier (its activation maps also drive the heatmap)
+        classifier_result: Optional[ClassifierResult] = None
+        if self.disease_classifier is not None:
+            try:
+                classifier_result = self.disease_classifier.predict(rgb_image)
+            except Exception as e:
+                logger.error("Disease classifier failed (%s); keeping heuristic findings.", e)
+
+        # 7. Explainability heatmap
         cam_filename = f"{screening_id}_cam.png"
         cam_file_path = HEATMAPS_DIR / cam_filename
         raw_cam_filename = f"{screening_id}_raw_cam.npy"
         raw_cam_path = HEATMAPS_DIR / raw_cam_filename
 
         try:
-            raw_heatmap, overlay_rgb = self.explainer.explain(
-                input_tensor=tensor_img,
-                original_rgb=preprocessed_rgb,
-                target_category=None,
-                colormap=cv2.COLORMAP_TURBO,
-                blend_alpha=0.55,
-            )
+            if classifier_result is not None:
+                raw_heatmap, overlay_rgb = self._classifier_heatmap(classifier_result, rgb_image)
+            elif self.explainer is not None:
+                import torch
+                raw_heatmap, overlay_rgb = self.explainer.explain(
+                    input_tensor=torch.from_numpy(model_input),
+                    original_rgb=preprocessed_rgb,
+                    target_category=None,
+                    colormap=cv2.COLORMAP_TURBO,
+                    blend_alpha=0.55,
+                )
+            else:
+                raise RuntimeError("no explainability source available")
             # Save overlay image
             overlay_bgr = cv2.cvtColor(overlay_rgb, cv2.COLOR_RGB2BGR)
             cv2.imwrite(str(cam_file_path), overlay_bgr)
@@ -292,11 +312,11 @@ class ScreeningService:
             cam_file_path = None
             raw_cam_path = None
 
-        # 7. Interactive Lesion Segmentation & Affected Area Quantification
+        # 8. Interactive Lesion Segmentation & Affected Area Quantification
         lesion_analysis = self.lesion_detector.detect_lesions(rgb_image, icdr_grade=grade)
-        if self.disease_classifier is not None:
+        if classifier_result is not None:
             try:
-                apply_to_analysis(self.disease_classifier.predict(rgb_image), lesion_analysis, rgb_image.shape)
+                apply_to_analysis(classifier_result, lesion_analysis, rgb_image.shape)
             except Exception as e:
                 logger.error("Disease classifier failed (%s); keeping heuristic findings.", e)
         analyzed_filename = f"{screening_id}_analyzed.png"
@@ -358,6 +378,23 @@ class ScreeningService:
             logger.error("Failed to generate PDF report: %s", e)
 
         return record
+
+    def _pytorch_predict(self, model_input: np.ndarray) -> float:
+        import torch
+        with torch.no_grad():
+            return float(self.pytorch_model(torch.from_numpy(model_input)).squeeze().item())
+
+    @staticmethod
+    def _classifier_heatmap(result: ClassifierResult, rgb_image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """Activation map of the most likely detected condition (else of 'abnormal'), blended onto the photo."""
+        ranked = sorted(result.predictions.items(), key=lambda kv: -kv[1].probability)
+        detected = [cid for cid, pred in ranked if pred.detected]
+        heatmap = cam_full_frame(result, detected[0] if detected else "abnormal", rgb_image.shape)
+        if heatmap is None:
+            raise RuntimeError("activation map could not be placed on the image")
+        colored = cv2.cvtColor(cv2.applyColorMap(np.uint8(255 * heatmap), cv2.COLORMAP_TURBO), cv2.COLOR_BGR2RGB)
+        overlay = cv2.addWeighted(rgb_image, 0.45, colored, 0.55, 0)
+        return heatmap, overlay
 
     def get_screening(self, db: Session, screening_id: str) -> Optional[ScreeningRecord]:
         return db.query(ScreeningRecord).filter(ScreeningRecord.id == screening_id).first()

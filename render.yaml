@@ -1,0 +1,12 @@
+# Render Blueprint for the RetinaLens API: Render dashboard → New → Blueprint → pick this repo.
+services:
+  - type: web
+    name: retinalens-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false  # Render asks for the value when the Blueprint is created; it is never stored in git

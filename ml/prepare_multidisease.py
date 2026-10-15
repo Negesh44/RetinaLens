@@ -17,8 +17,6 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-import pandas as pd
-import pyarrow.parquet as pq
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "multidisease"
@@ -74,6 +72,8 @@ def _write(args):
 
 
 def rfmid_rows():
+    import pyarrow.parquet as pq
+
     rows, jobs = [], []
     for split_hf, split in (("train", "train"), ("validation", "val"), ("test", "test")):
         idx = 0
@@ -99,6 +99,8 @@ def rfmid_rows():
 
 
 def odir_rows():
+    import pyarrow.parquet as pq
+
     f = glob.glob(str(ROOT / "data/hf_odir/data/*.parquet"))[0]
     meta = pq.read_table(f, columns=["patient_id", "label"]).to_pandas()
     # Split by patient so both eyes of one person stay in the same split.
@@ -133,6 +135,8 @@ def odir_rows():
 
 
 def main():
+    import pandas as pd
+
     (OUT / "images").mkdir(parents=True, exist_ok=True)
     rows, jobs = [], []
     for fn in (rfmid_rows, odir_rows):

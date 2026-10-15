@@ -245,38 +245,23 @@ The app has two parts that are hosted separately:
 | Part | Where | Why |
 |---|---|---|
 | Frontend (React/Vite) | **Vercel** | Static site; `vercel.json` builds `frontend/` and forwards API calls |
-| Backend (FastAPI + AI model) | **Render / Railway / Fly.io / Hugging Face Spaces** (Docker) | Needs PyTorch, OpenCV, an 80 MB model, a database and file storage, which Vercel serverless functions cannot hold |
+| Backend (FastAPI + AI model) | **Render** (Docker, `render.yaml`) | Needs ONNX Runtime, OpenCV, an 80 MB model, a database and file storage, which Vercel serverless functions cannot hold |
 
-### Step 1: deploy the backend (Docker)
-The backend needs about **1 GB of RAM**, so 512 MB free tiers (such as Render Free) run out of memory. Two hosts that work:
+### Step 1: deploy the backend on Render (free)
+The API server runs only the exported ONNX models (no PyTorch, `requirements-server.txt`), so it uses about 400 MB of RAM and fits Render's free 512 MB plan.
 
-**Option A: Hugging Face Spaces (free, 16 GB RAM)**
-1. On huggingface.co: **New Space → SDK: Docker → Blank**, name it e.g. `retinalens-api`.
-2. In the Space's **Settings → Variables and secrets**, add the secret **`GEMINI_API_KEY`**.
-3. Push the backend files to the Space (the model is larger than 10 MB, so Git LFS is needed):
-   ```bash
-   git clone https://huggingface.co/spaces/<hf-user>/retinalens-api hf-space
-   cp -r Dockerfile requirements.txt backend ml checkpoints hf-space/
-   cd hf-space
-   printf -- "---
-title: RetinaLens API
-sdk: docker
-app_port: 7860
----
-" > README.md
-   git lfs install && git lfs track "*.onnx" "*.ttf"
-   git add . && git commit -m "Deploy RetinaLens API" && git push   # password = an HF access token with write access
-   ```
-4. When the build finishes, the URL is `https://<hf-user>-retinalens-api.hf.space`. Check `https://<url>/api/health`.
+1. Sign in at [render.com](https://render.com) with GitHub.
+2. **New → Blueprint** → pick this repo. Render reads `render.yaml` (Docker, free plan, health check `/api/health`).
+3. When asked, paste your **`GEMINI_API_KEY`** (Google AI Studio key). It is stored in Render, never in git.
+4. Click **Apply** and wait for the first build (about 5 minutes).
+5. Copy the service URL, for example `https://retinalens-api.onrender.com`, and open `https://<url>/api/health` to check it.
 
-**Option B: Railway (deploys straight from GitHub)**
-1. **New Project → Deploy from GitHub repo** → pick this repo. Railway detects the `Dockerfile`.
-2. Add the variable **`GEMINI_API_KEY`**, then **Settings → Networking → Generate Domain**.
+Free-plan limits: the service sleeps after 15 minutes without traffic and takes up to a minute to wake, and it has a small CPU, so a screening is slower than on a laptop. Open `/api/health` a minute before a demo to wake it. Railway, Fly.io and Hugging Face Spaces (Docker, port 7860) also work with the same `Dockerfile`.
 
-Notes: free hosts usually have temporary disks, so the screening history and uploaded photos are wiped on restart. Attach a persistent disk mounted at `/app/storage` to keep them. The first start downloads small ImageNet weights, so allow a minute.
+Notes: free hosts usually have temporary disks, so the screening history and uploaded photos are wiped on restart. Render free has no persistent disk; a paid plan can mount one at `/app/storage`.
 
 ### Step 2: deploy the frontend on Vercel
-1. In `vercel.json`, replace every `YOUR-BACKEND-URL` with the backend's host name only, for example `<hf-user>-retinalens-api.hf.space` (the `https://` is already there). Commit and push.
+1. In `vercel.json`, replace every `YOUR-BACKEND-URL` with the backend's host name only, for example `retinalens-api.onrender.com` (the `https://` is already there). Commit and push.
 2. In Vercel: **Add New Project → Import** this GitHub repo. Keep the root directory as the repo root; the build settings come from `vercel.json`.
 3. Deploy. Vercel serves the site and forwards `/api`, `/uploads` and `/heatmaps` to the backend, so no CORS or code changes are needed.
 

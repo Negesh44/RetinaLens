@@ -10,8 +10,6 @@ Implements clinical-grade preprocessing:
 from typing import Tuple, Optional
 import cv2
 import numpy as np
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
 
 
 def crop_retina_border(
@@ -136,8 +134,11 @@ def preprocess_fundus_image(
     return processed
 
 
-def get_train_transforms(image_size: int = 224) -> A.Compose:
+def get_train_transforms(image_size: int = 224) -> "A.Compose":
     """Albumentations training augmentation pipeline with standard clinical variations."""
+    import albumentations as A
+    from albumentations.pytorch import ToTensorV2
+
     return A.Compose([
         A.HorizontalFlip(p=0.5),
         A.VerticalFlip(p=0.5),
@@ -165,8 +166,11 @@ def get_train_transforms(image_size: int = 224) -> A.Compose:
     ])
 
 
-def get_val_transforms(image_size: int = 224) -> A.Compose:
+def get_val_transforms(image_size: int = 224) -> "A.Compose":
     """Deterministic validation and inference transform pipeline."""
+    import albumentations as A
+    from albumentations.pytorch import ToTensorV2
+
     return A.Compose([
         A.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -174,3 +178,13 @@ def get_val_transforms(image_size: int = 224) -> A.Compose:
         ),
         ToTensorV2(),
     ])
+
+
+IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+IMAGENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+
+
+def to_model_input(image_rgb: np.ndarray) -> np.ndarray:
+    """NumPy equivalent of get_val_transforms: ImageNet-normalised float32 array [1, 3, H, W]."""
+    x = (image_rgb.astype(np.float32) / 255.0 - IMAGENET_MEAN) / IMAGENET_STD
+    return np.ascontiguousarray(x.transpose(2, 0, 1)[None], dtype=np.float32)
